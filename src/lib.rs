@@ -25,7 +25,7 @@ pub enum Error {
 
 /// Each map is 16x16, each cell can range from -50 to 50 (0 is base height).
 /// The level_map describes the height level while prefab_map indicates if and what prefabs should be placed on the cell.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MapPattern {
     level_map: [i8; MAP_SIZE],
     prefab_map: [char; MAP_SIZE],
