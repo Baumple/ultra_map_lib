@@ -126,7 +126,7 @@ impl MapPattern {
         if index >= 256 {
             panic!("Invalid");
         }
-        if !(-50..50).contains(&level) {
+        if !(-50..=50).contains(&level) {
             panic!("Level cannot be greater than 50 or lower than -50")
         }
         self.level_map[x * y] = level;
