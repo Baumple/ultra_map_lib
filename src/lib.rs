@@ -91,8 +91,12 @@ impl MapPattern {
             prefab_map,
         })
     }
-    pub fn level_map(&self) -> &[i8] {
+    pub fn get_level_map(&self) -> &[i8] {
         self.level_map.as_slice()
+    }
+
+    pub fn get_level_map_mut(&mut self) -> &mut [i8] {
+        self.level_map.as_mut_slice()
     }
 
     pub fn prefab_map(&self) -> &[char] {
