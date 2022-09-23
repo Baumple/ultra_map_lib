@@ -99,8 +99,11 @@ impl MapPattern {
         self.level_map.as_mut_slice()
     }
 
-    pub fn prefab_map(&self) -> &[char] {
+    pub fn get_prefab_map(&self) -> &[char] {
         self.prefab_map.as_slice()
+    }
+    pub fn get_prefab_map_mut(&mut self) -> &mut [char] {
+        self.prefab_map.as_mut_slice()
     }
 
     pub fn get_map_raw(&self) -> String {
@@ -145,7 +148,7 @@ impl MapPattern {
 
     /// set prefab at given tile
     pub fn set_prefab_at(&mut self, x: usize, y: usize, prefab: Prefab) {
-        self.prefab_map[x * y] = Prefab::match_char(prefab);
+        self.prefab_map[x * y] = Prefab::match_char(&prefab);
     }
 
     pub fn save_pattern(&self, name: &str) -> Result<(), Error> {
@@ -179,6 +182,7 @@ impl MapPattern {
     }
 }
 
+#[derive(Clone)]
 pub enum Prefab {
     Melee,
     Projectile,
@@ -188,7 +192,7 @@ pub enum Prefab {
 }
 
 impl Prefab {
-    fn match_char(prefab: Prefab) -> char {
+    pub fn match_char(prefab: &Prefab) -> char {
         match prefab {
             Prefab::Melee => 'n',
             Prefab::Projectile => 'p',
@@ -196,5 +200,11 @@ impl Prefab {
             Prefab::Stairs => 's',
             Prefab::Hideous => 'H',
         }
+    }
+}
+
+impl Default for Prefab {
+    fn default() -> Self {
+        Prefab::Projectile
     }
 }
