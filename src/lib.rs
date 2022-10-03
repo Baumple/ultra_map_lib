@@ -21,6 +21,9 @@ pub enum Error {
 
     #[error("Invalid coordinates")]
     UltraMapIndexOutOfBounds,
+
+    #[error("Invalid character")]
+    UltraMapInvalidCharacter,
 }
 
 /// Each map is 16x16, each cell can range from -50 to 50 (0 is base height).
@@ -28,14 +31,14 @@ pub enum Error {
 #[derive(Debug, Clone)]
 pub struct MapPattern {
     level_map: [i8; MAP_SIZE],
-    prefab_map: [char; MAP_SIZE],
+    prefab_map: [Prefab; MAP_SIZE],
 }
 
 impl Default for MapPattern {
     fn default() -> Self {
         Self {
             level_map: [0; MAP_SIZE],
-            prefab_map: ['0'; MAP_SIZE],
+            prefab_map: [Prefab::Empty; MAP_SIZE],
         }
     }
 }
@@ -86,9 +89,16 @@ impl MapPattern {
             index += 1;
         }
 
+        let mut prefab_map_arr = [Prefab::Empty; 256];
+        for (index, c) in prefab_map.iter().enumerate() {
+            if *c != '0' {
+                prefab_map_arr[index] = Prefab::try_from(*c).unwrap();
+            }
+        }
+
         Ok(Self {
             level_map,
-            prefab_map,
+            prefab_map: prefab_map_arr,
         })
     }
     pub fn get_level_map(&self) -> &[i8] {
@@ -99,10 +109,10 @@ impl MapPattern {
         self.level_map.as_mut_slice()
     }
 
-    pub fn get_prefab_map(&self) -> &[char] {
+    pub fn get_prefab_map(&self) -> &[Prefab] {
         self.prefab_map.as_slice()
     }
-    pub fn get_prefab_map_mut(&mut self) -> &mut [char] {
+    pub fn get_prefab_map_mut(&mut self) -> &mut [Prefab] {
         self.prefab_map.as_mut_slice()
     }
 
@@ -116,7 +126,7 @@ impl MapPattern {
         returnee.push('\n');
 
         for c in self.prefab_map {
-            returnee.push(c);
+            returnee.push(c.into());
         }
 
         returnee
@@ -148,7 +158,7 @@ impl MapPattern {
 
     /// set prefab at given tile
     pub fn set_prefab_at(&mut self, x: usize, y: usize, prefab: Prefab) {
-        self.prefab_map[x * y] = Prefab::match_char(&prefab);
+        self.prefab_map[x * y] = prefab;
     }
 
     pub fn save_pattern(&self, name: &str) -> Result<(), Error> {
@@ -174,7 +184,7 @@ impl MapPattern {
             if index % 16 == 0 && index > 0 {
                 save.push('\n');
             }
-            save.push(*c);
+            save.push(Prefab::match_char(c));
         }
 
         writeln!(f, "{}", save)?;
@@ -182,8 +192,9 @@ impl MapPattern {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy, Debug)]
 pub enum Prefab {
+    Empty,
     Melee,
     Projectile,
     JumpPad,
@@ -194,11 +205,40 @@ pub enum Prefab {
 impl Prefab {
     pub fn match_char(prefab: &Prefab) -> char {
         match prefab {
+            Prefab::Empty => '0',
             Prefab::Melee => 'n',
             Prefab::Projectile => 'p',
             Prefab::JumpPad => 'J',
             Prefab::Stairs => 's',
             Prefab::Hideous => 'H',
+        }
+    }
+}
+
+impl Into<char> for Prefab {
+    fn into(self) -> char {
+        match self {
+            Prefab::Empty => '0',
+            Prefab::Melee => 'n',
+            Prefab::Projectile => 'p',
+            Prefab::JumpPad => 'J',
+            Prefab::Stairs => 's',
+            Prefab::Hideous => 'H',
+        }
+    }
+}
+
+impl TryFrom<char> for Prefab {
+    type Error = Error;
+    fn try_from(value: char) -> Result<Self, Self::Error> {
+        match value {
+            'n' => Ok(Prefab::Melee),
+            'p' => Ok(Prefab::Projectile),
+            'J' => Ok(Prefab::JumpPad),
+            'H' => Ok(Prefab::Hideous),
+            's' => Ok(Prefab::Stairs),
+            '0' => Ok(Prefab::Empty),
+            _ => Err(Error::UltraMapInvalidCharacter),
         }
     }
 }
