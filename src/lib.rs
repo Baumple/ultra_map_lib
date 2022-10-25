@@ -136,14 +136,14 @@ impl MapPattern {
     /// Note! level cannot be higher than 50 or lower than -50
     /// Coordinates are 0 indexed
     pub fn set_level_at(&mut self, x: usize, y: usize, level: i8) {
-        let index = x * y;
+        let index = x * 16 + y;
         if index >= 256 {
             panic!("Invalid");
         }
         if !(-50..=50).contains(&level) {
             panic!("Level cannot be greater than 50 or lower than -50")
         }
-        self.level_map[(x * 16 + y)] = level;
+        self.level_map[index] = level;
     }
 
     pub fn set_level_at_index(&mut self, index: usize, level: i8) {
@@ -160,7 +160,7 @@ impl MapPattern {
     /// set prefab at given tile
     /// x and y coordinates are 0 indexed
     pub fn set_prefab_at(&mut self, x: usize, y: usize, prefab: Prefab) {
-        self.prefab_map[dbg!(x * 16 + y)] = prefab;
+        self.prefab_map[x * 16 + y] = prefab;
     }
 
     pub fn save_pattern(&self, name: &str) -> Result<(), Error> {
